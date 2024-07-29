@@ -1,0 +1,1 @@
+ $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I"mcc_generated_files" -I"Cfg" -I"User" -I"../Bld" -I"../../../RPCLib/MIPS" -ffunction-sections -fdata-sections -O1 -fno-common -Wall -mcci   -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    D:\New folder\RPCLib\MIPS\Common\Utils.c
