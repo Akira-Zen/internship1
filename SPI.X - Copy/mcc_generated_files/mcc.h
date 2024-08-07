@@ -51,18 +51,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "drivers/spi_master.h"
+#include "i2c1_driver.h"
+#include "drivers/i2c_simple_master.h"
 #include "memory/flash.h"
-#include "uart3.h"
-#include "watchdog.h"
 #include "interrupt_manager.h"
 #include "exceptions.h"
+#include "spi2_driver.h"
+#include "uart3.h"
+#include "uart2.h"
+#include "drivers/spi_master.h"
+#include "watchdog.h"
 #include "drivers/i2c_master.h"
 #include "usb/usb.h"
-#include "drivers/i2c_simple_master.h"
-#include "spi2_driver.h"
 #include "coretimer.h"
-#include "i2c1_driver.h"
 
 #warning "This file will be removed in future MCC releases. Use system.h instead."
 

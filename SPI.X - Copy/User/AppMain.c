@@ -2,6 +2,7 @@
 #include "coretimer.h"
 #include "stdio.h"
 #include "spi2_driver.h"
+#include "uart2.h"
 #define THERMO 0x48
 #define TEMP_REG 0x00
 //page 16
@@ -14,10 +15,14 @@
 //page 12
 #define ACC 0x1E
 #define ACC_REG 0b00100111
- uint32_t add = 0x000000; 
- bool state_flag = 1;
- uint8_t buffer[256];
-uint8_t data[256]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+uint32_t add = 0x000000;
+bool state_flag = 1;
+uint8_t buffer[256];
+uint8_t data[256] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+int space_Flag = 0;
+int a = 0;
+int b = 0;
+
 typedef enum {
     APP_INIT = 0,
     APP_AT_CHECK,
@@ -89,23 +94,14 @@ public void APP_Main_Initialize(void) // <editor-fold defaultstate="collapsed" d
     LATBbits.LATB8 = 1;
     TRISBbits.TRISB9 = 0;
     LATBbits.LATB9 = 0;
-    printf("hello\n");
     //i2c_write2ByteRegister(THERMO, TEMP_REG, TEMP_DATA);
     //i2c_write1ByteRegister(LIGHT, LIGHT_REG, LIGHT_DATA);
     //i2c_write1ByteRegister(ACC, ACC_REG,0b11000110 );  
     __dbs("\n------------------------------\n");
-    Flash_Init();
-    Erase_full_mem();
 } // </editor-fold>  
 
-void Telit_ReceiveDataFromUart3(char *buffer_Uart3) {
-    if (UART3_IsRxReady()) {
-        *(buffer_Uart3) = UART3_Read();
-        UART3_Write(*(buffer_Uart3));
-    }
-}
 
-
+// </editor-fold>
 //void DataPlot(uint16_t ALS, uint16_t PS) {
 //    UART3_Write(0x03);
 //    UART3_Write((uint8_t) ALS);
@@ -115,26 +111,140 @@ void Telit_ReceiveDataFromUart3(char *buffer_Uart3) {
 //    UART3_Write(0xFC);
 //}
 
-public void APP_Main_Tasks(void) // <editor-fold defaultstate="collapsed" desc="Application Main Task">
-{
-    
-if (Tick_Timer_Is_Over_Ms(AppCxt.Tick2, 100)) {
-    if (state_flag) {
-        Flash_Sector_Program(add, data);
-        Flash_Read(add);  // Read and print the data
-        // Read the sector into RAM
-    Flash_Read_Sector(add, buffer);
+//void Telit_SendDataBack(char *buffer_Uart2) {
+//    if (UART2_IsRxReady()) {
+//        *(buffer_Uart2) = UART2_Read();
+//        //        UART3_Write(*(buffer_Uart2));
+//    }
+//}
+//
+//void Telit_ReceiveData(char *DataSend) {
+//    for (int i = 0; i < strlen(DataSend); i++) {
+//        UART2_Write(*(DataSend + i));
+//    }
+//}
 
-// Modify the byte at index 10
-    Modify_Byte_In_RAM(buffer, 10, 0xAB);
-    DeleteSector(add);
-// Write the modified buffer back to flash
-    Flash_Write_Sector(add, buffer);
-    Flash_Read(add); 
-        state_flag = 0;
-        
+tick_timer_t RxTick;
+uint8_t RxBuff[256];
+int RxLen;
+
+void send_cmd(uint8_t *cmd) {
+    printf("\nCMD: %s", cmd);
+
+    while (*cmd != 0x00) {
+        while (!UART2_IsTxReady());
+        UART2_Write(*cmd++);
     }
-    LED2_Toggle();
+
+    while (!UART2_IsTxDone());
+    Tick_Timer_Reset(RxTick);
+    RxLen = 0;
+    memset(RxBuff, 0x00, sizeof(RxBuff));
 }
-    
+
+bool get_res(void) {
+    if (UART2_IsRxReady()) {
+        RxBuff[RxLen++] = UART2_Read();
+
+        if (RxLen >= sizeof (RxBuff))
+            RxLen = 0;
+
+        Tick_Timer_Reset(RxTick);
+    } else if (Tick_Timer_Is_Over_Ms(RxTick, 100)) {
+        if (RxBuff > 0)
+            printf("\nRES %d: %s", RxLen, RxBuff);
+        else
+            printf("\nRES NULL");
+        return 1;
+    }
+
+    return 0;
+}
+
+void APP_Main_Tasks(void) {
+    static uint8_t DoNext = 0;
+
+    switch (DoNext) {
+        case 0:
+            send_cmd((uint8_t *)"AT#CGSN\r");
+            DoNext++;
+            break;
+
+        case 1:
+            if (get_res()) {
+                uint8_t imei[24];
+                int i, j;
+                //\r\nAT+CGSN 12345678906553434\r\nOK\r\n
+                i = 5 + str_1st_contain_idx("CGSN: ", (char *)&RxBuff[0]);
+
+                if (i >= 5) {
+                    j = i + str_1st_index((char *)&RxBuff[i], '\r');
+
+                    if (j > i) {
+                        RxBuff[j] = 0x00;
+                        strcpy((char *)imei, (char *)&RxBuff[i]);
+                        printf("\n--> %s", imei);
+                    }
+                }
+
+                DoNext++;
+            }
+            break;
+            case 2:
+            send_cmd((uint8_t *)"AT#CGMM\r");
+            DoNext++;
+            break;
+
+        case 3:
+            if (get_res()) {
+                uint8_t model[24];
+                int i, j;
+                //\r\nAT+CGSN 12345678906553434\r\nOK\r\n
+                i = 5 + str_1st_contain_idx("CGMM: ", (char *)&RxBuff[0]);
+
+                if (i >= 5) {
+                    j = i + str_1st_index((char *)&RxBuff[i], '\r');
+
+                    if (j > i) {
+                        RxBuff[j] = 0x00;
+                        strcpy((char *)model, (char *)&RxBuff[i]);
+                        printf("\n--> %s", model);
+                    }
+                }
+
+                DoNext++;
+            }
+            break;
+            case 4:
+            send_cmd((uint8_t *)"AT+CEREG\r");
+            DoNext++;
+            break;
+
+        case 5:
+            if (get_res()) {
+                uint8_t network[24];
+                int i, j;
+                //\r\nAT+CGSN 12345678906553434\r\nOK\r\n
+                i = 5 + str_1st_contain_idx("CEREG: ", (char *)&RxBuff[0]);
+
+                if (i >= 5) {
+                    j = i + str_1st_index((char *)&RxBuff[i], '\r');
+
+                    if (j > i) {
+                        RxBuff[j] = 0x00;
+                        strcpy((char *)network, (char *)&RxBuff[i]);
+                        printf("\n--> %s", network);
+                    }
+                }
+
+                DoNext++;
+            }
+            break;
+            
+
+        default:
+            if(Tick_Timer_Is_Over_Ms(AppCxt.Tick1, 1000))
+                DoNext=0;
+            break;
+    }
 }

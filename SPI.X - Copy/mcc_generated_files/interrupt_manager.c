@@ -65,6 +65,21 @@ void INTERRUPT_Initialize (void)
         IPC7bits.USBIP = 1;
     //    Sub Priority: 0
         IPC7bits.USBIS = 0;
+    //    UERI: UART 2 Error
+    //    Priority: 1
+        IPC14bits.U2EIP = 1;
+    //    Sub Priority: 0
+        IPC14bits.U2EIS = 0;
+    //    UTXI: UART 2 Transmission
+    //    Priority: 1
+        IPC14bits.U2TXIP = 1;
+    //    Sub Priority: 0
+        IPC14bits.U2TXIS = 0;
+    //    URXI: UART 2 Reception
+    //    Priority: 1
+        IPC14bits.U2RXIP = 1;
+    //    Sub Priority: 0
+        IPC14bits.U2RXIS = 0;
     //    CNAI: PORT A Change Notification
     //    Priority: 7
         IPC2bits.CNAIP = 7;

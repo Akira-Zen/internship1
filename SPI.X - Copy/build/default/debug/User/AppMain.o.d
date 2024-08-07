@@ -28,7 +28,8 @@ build/default/debug/User/AppMain.o: User/AppMain.c User/AppMain.h \
  ../Bld/../../ARDI/APP.X/mcc_generated_files/drivers/i2c_simple_master.h \
  d:\new\ folder\rpclib\ardi\app.x\mcc_generated_files\drivers\i2c_types.h \
  User/../mcc_generated_files/drivers/i2c_types.h \
- mcc_generated_files/spi2_driver.h mcc_generated_files/spi2_types.h
+ mcc_generated_files/spi2_driver.h mcc_generated_files/spi2_types.h \
+ mcc_generated_files/uart2.h
 
 User/AppMain.h:
 
@@ -115,3 +116,5 @@ User/../mcc_generated_files/drivers/i2c_types.h:
 mcc_generated_files/spi2_driver.h:
 
 mcc_generated_files/spi2_types.h:
+
+mcc_generated_files/uart2.h:

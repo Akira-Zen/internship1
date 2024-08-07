@@ -49,6 +49,7 @@
         <itemPath>mcc_generated_files/i2c1_driver.h</itemPath>
         <itemPath>mcc_generated_files/spi2_driver.h</itemPath>
         <itemPath>mcc_generated_files/spi2_types.h</itemPath>
+        <itemPath>mcc_generated_files/uart2.h</itemPath>
       </logicalFolder>
       <logicalFolder name="MIPS" displayName="MIPS" projectFiles="true">
         <logicalFolder name="Buttons" displayName="Buttons" projectFiles="true">
@@ -130,6 +131,7 @@
         <itemPath>mcc_generated_files/pin_manager.c</itemPath>
         <itemPath>mcc_generated_files/i2c1_driver.c</itemPath>
         <itemPath>mcc_generated_files/spi2_driver.c</itemPath>
+        <itemPath>mcc_generated_files/uart2.c</itemPath>
       </logicalFolder>
       <logicalFolder name="MIPS" displayName="MIPS" projectFiles="true">
         <logicalFolder name="Buttons" displayName="Buttons" projectFiles="true">

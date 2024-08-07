@@ -73,7 +73,7 @@ void PIN_MANAGER_Initialize (void)
      ***************************************************************************/
     LATA = 0x0010;
     LATB = 0x0000;
-    LATC = 0x0080;
+    LATC = 0x1080;
     LATD = 0x0001;
 
     /****************************************************************************
@@ -81,7 +81,7 @@ void PIN_MANAGER_Initialize (void)
      ***************************************************************************/
     TRISA = 0x0747;
     TRISB = 0xEF5F;
-    TRISC = 0x02FF;
+    TRISC = 0x027F;
     TRISD = 0x0000;
 
     /****************************************************************************
@@ -117,11 +117,13 @@ void PIN_MANAGER_Initialize (void)
     SYSTEM_RegUnlock(); // unlock PPS
     RPCONbits.IOLOCK = 0;
 
+    RPOR4bits.RP20R = 0x0004;    //RC7->UART2:U2TX
     RPOR1bits.RP5R = 0x0006;    //RA4->UART3:U3TX
-    RPOR2bits.RP11R = 0x0008;    //RB5->SPI2:SDO2
-    RPINR11bits.SDI2R = 0x0018;    //RA9->SPI2:SDI2
-    RPINR8bits.U3RXR = 0x000A;    //RB4->UART3:U3RX
     RPOR2bits.RP12R = 0x0009;    //RB7->SPI2:SCK2OUT
+    RPINR8bits.U3RXR = 0x000A;    //RB4->UART3:U3RX
+    RPINR11bits.SDI2R = 0x0018;    //RA9->SPI2:SDI2
+    RPOR2bits.RP11R = 0x0008;    //RB5->SPI2:SDO2
+    RPINR9bits.U2RXR = 0x0017;    //RC6->UART2:U2RX
 
     RPCONbits.IOLOCK = 1; // lock   PPS
     SYSTEM_RegLock(); 

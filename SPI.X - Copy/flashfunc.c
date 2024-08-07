@@ -65,17 +65,17 @@ void Erase_full_mem(){
     printf("Chip erased %d\n", Busy_flag());
     Write_Disable();
 }
-void Flash_Read(uint32_t address) {
-    uint8_t value[256]; // Adjust size if reading less data
+void Flash_Read(uint32_t address) { //page 11 read data from flash 
+    uint8_t value[256]; 
     FLASH_CS_N_SetLow();
-    spi2_exchangeByte(Read);                  // Send read command
-    spi2_exchangeByte((address >> 16) & 0xFF); // Send address bytes
+    spi2_exchangeByte(Read);                  
+    spi2_exchangeByte((address >> 16) & 0xFF); 
     spi2_exchangeByte((address >> 8) & 0xFF);
     spi2_exchangeByte(address & 0xFF);
 
     // Read data bytes
     for (int i = 0; i < 256; i++) {
-        value[i] = spi2_exchangeByte(0xFF);  // Send dummy byte to receive data
+        value[i] = spi2_exchangeByte(0xFF);  
     }
 
     FLASH_CS_N_SetHigh();
@@ -84,16 +84,16 @@ void Flash_Read(uint32_t address) {
     printf("Data read from address %08X:\n", address);
     for (int i = 0; i < 256; i++) {
         printf("%02X ", value[i]);
-        if ((i + 1) % 16 == 0) {  // Print new line every 16 bytes for readability
+        if ((i + 1) % 16 == 0) {  
             printf("\n");
         }
     }
 }
-void Flash_Sector_Program(uint32_t address, const uint8_t value[256]) {
-    Write_Enable();                 // Enable writing to flash memory
-    FLASH_CS_N_SetLow();           // Assert chip select
-    spi2_exchangeByte(Page_Program);  // Send page program command
-    spi2_exchangeByte((address >> 16) & 0xFF); // Send address bytes
+void Flash_Sector_Program(uint32_t address, const uint8_t value[256]) { //page 14 write data to flash
+    Write_Enable();                 
+    FLASH_CS_N_SetLow();           
+    spi2_exchangeByte(Page_Program); 
+    spi2_exchangeByte((address >> 16) & 0xFF); 
     spi2_exchangeByte((address >> 8) & 0xFF);
     spi2_exchangeByte(address & 0xFF);
 
@@ -102,34 +102,34 @@ void Flash_Sector_Program(uint32_t address, const uint8_t value[256]) {
         spi2_exchangeByte(value[i]);
     }
 
-    FLASH_CS_N_SetHigh();          // Deassert chip select
-    while (Busy_flag());           // Wait for programming to complete
-    Write_Disable();               // Disable writing to flash memory
+    FLASH_CS_N_SetHigh();          
+    while (Busy_flag());           
+    Write_Disable();               
 }
-void Flash_Read_Sector(uint32_t address, uint8_t *buffer) {
+void Flash_Read_Sector(uint32_t address, uint8_t *buffer) { //page 11 read data from flash to ram
     FLASH_CS_N_SetLow();
-    spi2_exchangeByte(Read);                  // Send read command
-    spi2_exchangeByte((address >> 16) & 0xFF); // Send address bytes
+    spi2_exchangeByte(Read);                  
+    spi2_exchangeByte((address >> 16) & 0xFF); 
     spi2_exchangeByte((address >> 8) & 0xFF);
     spi2_exchangeByte(address & 0xFF);
 
     // Read data bytes
     for (int i = 0; i < 256; i++) {
-        buffer[i] = spi2_exchangeByte(0xFF);  // Send dummy byte to receive data
+        buffer[i] = spi2_exchangeByte(0xFF);  
     }
 
     FLASH_CS_N_SetHigh();
 }
-void Modify_Byte_In_RAM(uint8_t *buffer, size_t index, uint8_t new_value) {
-    if (index < 256) { // Ensure index is within bounds
+void Modify_Byte_In_RAM(uint8_t *buffer, size_t index, uint8_t new_value) { // change byte in ram
+    if (index < 256) { 
         buffer[index] = new_value;
     }
 }
-void Flash_Write_Sector(uint32_t address, const uint8_t *buffer) {
-    Write_Enable();                 // Enable writing to flash memory
-    FLASH_CS_N_SetLow();           // Assert chip select
-    spi2_exchangeByte(Page_Program);  // Send page program command
-    spi2_exchangeByte((address >> 16) & 0xFF); // Send address bytes
+void Flash_Write_Sector(uint32_t address, const uint8_t *buffer) { //paste data from ram to flash
+    Write_Enable();                 
+    FLASH_CS_N_SetLow();           
+    spi2_exchangeByte(Page_Program);  
+    spi2_exchangeByte((address >> 16) & 0xFF);
     spi2_exchangeByte((address >> 8) & 0xFF);
     spi2_exchangeByte(address & 0xFF);
 
@@ -138,19 +138,19 @@ void Flash_Write_Sector(uint32_t address, const uint8_t *buffer) {
         spi2_exchangeByte(buffer[i]);
     }
 
-    FLASH_CS_N_SetHigh();          // Deassert chip select
-    while (Busy_flag());           // Wait for programming to complete
-    Write_Disable();               // Disable writing to flash memory
+    FLASH_CS_N_SetHigh();          
+    while (Busy_flag());           
+    Write_Disable();               
 }
-void DeleteSector(uint32_t address){
-    Write_Enable();                 // Enable writing to flash memory
+void DeleteSector(uint32_t address){ //page 15 sector-erase 
+    Write_Enable();                 
     FLASH_CS_N_SetLow(); 
-    spi2_exchangeByte(Sector_Erase);  // Send page program command
-    spi2_exchangeByte((address >> 16) & 0xFF); // Send address bytes
+    spi2_exchangeByte(Sector_Erase);  
+    spi2_exchangeByte((address >> 16) & 0xFF);
     spi2_exchangeByte((address >> 8) & 0xFF);
     spi2_exchangeByte(address & 0xFF);
     FLASH_CS_N_SetHigh();
     while (Busy_flag());   
-    printf("Sector erased %d\n", Busy_flag());// Wait for programming to complete
+    printf("Sector erased %d\n", Busy_flag());
     Write_Disable();  
 }
